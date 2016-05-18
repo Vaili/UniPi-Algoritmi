@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct _adjlist {
+	struct _adjedge *link;
+	struct _adjlist *next;
+	char *label;
+} Vertex;
+
+typedef struct _adjedge {
+	struct _adjedge *next;
+	struct _adjlist *dest;
+	char *label;
+} Adj_Edge;
+
+int 	member		      (Vertex  *G, char *Label);
+void	G_Vertex_Add	  (Vertex **G);
+void	G_Vertex_New	  (Vertex **G, char *Label);
+void 	G_Vertex_Remove	(Vertex **G);
+void	G_Vertex_Delete	(Vertex **G, char *Label);
+void	G_Edge_New	    ();
+void	G_Edge_Delete	  ();
+void	G_Print_Graph	  (Vertex	*G);
+
+
+int main() {
+	Vertex *G = NULL;
+	char *name = NULL;
+	int run = 1, n;
+	while (run) {
+		scanf("%d", &n);
+		switch (n) {
+			case 0:
+				run = 0;
+			break;
+		
+			case 1:
+				G_Vertex_Add(&G);			
+			break;
+
+			case 2:
+				G_Vertex_Remove(&G);
+			break;
+
+			case 3:
+				G_Print_Graph(G);
+			break;
+		}
+	}
+
+	return 0;
+}
+
+int 	member		(Vertex  *G, char *Label) {
+	int mem = 0;
+	while (G && !mem) {
+		if (!strcmp(G->label, Label)) mem = 1;
+		else G = G->next;
+	}
+	return mem;
+}
+		
+void	G_Vertex_Add	(Vertex **G){
+
+	char *name = malloc(101 * sizeof(char));
+	scanf("%s", name);
+	if(!member(*G, name)){
+		G_Vertex_New(G, name);
+	} else {
+		printf("ERROR: Vertice \"%s\" gia presente.\n", name);
+	}
+	free(name);
+}
+
+void	G_Vertex_New(Vertex **G, char *Label){
+
+	Vertex *new = (Vertex*) malloc(sizeof(Vertex));
+	new->label = malloc(101 * sizeof(char));
+	strcpy(new->label, Label);
+	new->link = NULL;
+	new->next = NULL;
+
+	if (!(*G)) {
+		*G = new;
+	} else {
+		Vertex *aux = *G;
+		while(aux->next) aux = aux->next;
+		aux->next = new;
+	} 
+}
+
+void 	G_Vertex_Remove	(Vertex **G){
+	char *name = malloc(101 * sizeof(char));
+	scanf("%s", name);
+	G_Vertex_Delete(G, name);
+	free(name);
+}
+
+void	G_Vertex_Delete(Vertex **G, char *Label){
+
+	int trovato = 0;
+	Vertex *aux = *G;
+
+	while (aux && !trovato){
+		if (!strcmp(Label, aux->label)){
+			trovato = 1;
+		} else {
+			aux = aux->next;
+		}
+	}
+
+	if (trovato) {
+		// Dealloca archi;
+		if (aux->link) {				
+			Adj_Edge *prec = aux->link;
+			Adj_Edge *corr = prec->next;
+			while (corr) { 
+				free(prec);
+				prec = corr;
+				corr = corr->next;
+			}
+
+			free(aux->link);
+
+			// Controlla testa, coda o corpo per cancellazione
+			
+		}
+		if (aux == *G) {
+			*G = (*G)->next;
+			free(aux);
+		} else {
+			Vertex *prec = *G;
+			while (prec->next != aux) prec = prec->next;
+			prec->next = aux->next;
+			free(aux);
+		}		
+	} else {
+		printf("ERROR: Vertice \"%s\" non trovato;\n", Label);
+	}	
+} 
+
+void	G_Print_Graph	(Vertex	*G){
+	while (G){
+		printf("%s ", G->label);
+		G = G->next;
+	}
+	printf("\n");
+}
